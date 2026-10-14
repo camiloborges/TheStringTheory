@@ -2650,6 +2650,15 @@ public class GuitarBridgeServer : MonoBehaviour
             return;
         }
 
+        int difficultyStep = Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus) ? 1
+            : Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus) ? -1
+            : 0;
+        if (!isPaused && difficultyStep != 0 && IsCurrentArrangementDifficultyModeAvailable())
+        {
+            StepArrangementDifficultyInPlace(difficultyStep);
+            return;
+        }
+
         if (Input.GetKeyDown(BackgroundMoodSetterKey) && CanOpenBackgroundMoodSetter())
         {
             OpenBackgroundMoodSetterFromUi();
@@ -13424,6 +13433,53 @@ public class GuitarBridgeServer : MonoBehaviour
         ResumePlaybackFromUi();
     }
 
+    // +/- during play: one difficulty level up or down, continuing from the current position
+    // (the pause-menu popup restarts the song). Mid-song changes never save a best score.
+    private void StepArrangementDifficultyInPlace(int delta)
+    {
+        selectedGameplayArrangementDifficultyIndex = GetCurrentArrangementDifficultyVariantIndex();
+        AdjustArrangementGameplayDifficultyFromUi(delta);
+        MusicXmlLoader.MusicXmlPartSummary selectedVariant = GetCurrentArrangementSelectedVariant();
+        if (selectedVariant == null)
+            return;
+        if (string.Equals(selectedVariant.PartId, selectedMusicXmlPartId, StringComparison.OrdinalIgnoreCase))
+        {
+            ShowGameplayNotice(delta > 0 ? "Hardest level" : "Easiest level");
+            return;
+        }
+
+        float resumeTime = songTimer;
+        useAutoTrackSelection = false;
+        selectedMusicXmlPartId = selectedVariant.PartId;
+        if (!ReloadCurrentGuitarChartForSelectedTrack())
+        {
+            selectedMusicXmlPartId = GetPersistentArrangementPartId(selectedMusicXmlPartId, currentSongPartSummaries);
+            ApplyTrackSelectionPreference();
+            selectedGameplayArrangementDifficultyIndex = GetCurrentArrangementDifficultyVariantIndex();
+            return;
+        }
+
+        RefreshEffectiveAudioOffset();
+        UpdatePersistedTrackSelectionStateFromActiveSelection();
+        SaveSongMetadata();
+        scoreSaveInvalidated = true;
+        SeekSongTime(resumeTime, false);
+        // The reloaded chart's earlier notes were never played at this level: score from here on.
+        ResetSessionScoreState(ignoreCurrentlyResolvedNotes: true);
+        SyncAudioToSongTimer(playImmediately: true);
+        ShowGameplayNotice($"Level {GetCurrentArrangementDifficultyDisplayIndex() + 1} / {GetCurrentArrangementDifficultyVariants().Count}");
+        Debug.Log($"[Difficulty] Stepped {(delta > 0 ? "up" : "down")} to '{selectedVariant.PartId}' at {resumeTime:0.0}s.");
+    }
+
+    private string gameplayNoticeText = string.Empty;
+    private float gameplayNoticeHideAt;
+
+    private void ShowGameplayNotice(string text)
+    {
+        gameplayNoticeText = text ?? string.Empty;
+        gameplayNoticeHideAt = Time.unscaledTime + 1.5f;
+    }
+
     public void BackToSongSelectionFromUi()
     {
         CloseTrackSelection();
@@ -22371,6 +22427,7 @@ private void OpenOrFocusToneLab()
             notesDetectorRoutineCompleted = showNotesDetectorRoutinePopup && notesDetectorRoutineStageIndex >= notesDetectorRoutineSteps.Count,
             showStartupTuningReminder = showStartupTuningReminder,
             showDiagnosticsConsentPopup = showDiagnosticsConsentPopup,
+            gameplayNoticeText = Time.unscaledTime < gameplayNoticeHideAt ? gameplayNoticeText : string.Empty,
             selectedDiagnosticsConsentIndex = selectedDiagnosticsConsentIndex,
             showBugReportScreen = showBugReportScreen,
             selectedBugReportActionIndex = selectedBugReportActionIndex,

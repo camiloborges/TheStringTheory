@@ -2251,6 +2251,10 @@ public sealed class TabsSongHeaderOverlay
 
     private readonly VisualElement startupTuningReminderOverlay;
 
+    private readonly VisualElement gameplayNoticeRoot;
+
+    private readonly Label gameplayNoticeLabel;
+
     private readonly ModernMenuPopup startupTuningReminderPopup;
 
     private readonly VisualElement loopPausePopupOverlay;
@@ -10653,6 +10657,32 @@ public sealed class TabsSongHeaderOverlay
 
         root.Add(startupTuningReminderOverlay);
 
+        // Brief centred notice during play (e.g. "Level 12 / 21" after +/-).
+        gameplayNoticeRoot = new VisualElement { pickingMode = PickingMode.Ignore };
+        gameplayNoticeRoot.style.position = Position.Absolute;
+        gameplayNoticeRoot.style.left = 0f;
+        gameplayNoticeRoot.style.right = 0f;
+        gameplayNoticeRoot.style.top = Length.Percent(18f);
+        gameplayNoticeRoot.style.flexDirection = FlexDirection.Row;
+        gameplayNoticeRoot.style.justifyContent = Justify.Center;
+        gameplayNoticeRoot.style.display = DisplayStyle.None;
+        gameplayNoticeLabel = new Label { pickingMode = PickingMode.Ignore };
+        gameplayNoticeLabel.style.unityFontDefinition = modernUiFontDefinition;
+        gameplayNoticeLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+        gameplayNoticeLabel.style.fontSize = 44f;
+        gameplayNoticeLabel.style.color = Color.white;
+        gameplayNoticeLabel.style.backgroundColor = new Color(0.06f, 0.07f, 0.09f, 0.82f);
+        gameplayNoticeLabel.style.paddingLeft = 28f;
+        gameplayNoticeLabel.style.paddingRight = 28f;
+        gameplayNoticeLabel.style.paddingTop = 10f;
+        gameplayNoticeLabel.style.paddingBottom = 10f;
+        gameplayNoticeLabel.style.borderTopLeftRadius = 12f;
+        gameplayNoticeLabel.style.borderTopRightRadius = 12f;
+        gameplayNoticeLabel.style.borderBottomLeftRadius = 12f;
+        gameplayNoticeLabel.style.borderBottomRightRadius = 12f;
+        gameplayNoticeRoot.Add(gameplayNoticeLabel);
+        root.Add(gameplayNoticeRoot);
+
         root.Add(libraryLoadingOverlay.RootElement);
 
         root.Add(loopPausePopupOverlay);
@@ -10694,6 +10724,11 @@ public sealed class TabsSongHeaderOverlay
         if (snapshot == null)
 
             return;
+
+        bool showGameplayNotice = !string.IsNullOrEmpty(snapshot.gameplayNoticeText);
+        gameplayNoticeRoot.style.display = showGameplayNotice ? DisplayStyle.Flex : DisplayStyle.None;
+        if (showGameplayNotice && !string.Equals(gameplayNoticeLabel.text, snapshot.gameplayNoticeText, StringComparison.Ordinal))
+            gameplayNoticeLabel.text = snapshot.gameplayNoticeText;
 
         string songName = string.IsNullOrWhiteSpace(snapshot.currentSongDisplayName)
 
