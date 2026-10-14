@@ -3293,10 +3293,22 @@ public sealed class UnityToneLabRuntime : MonoBehaviour
                 || string.Equals(candidate.Name, normalizedSavedName, StringComparison.OrdinalIgnoreCase));
             if (normalized != null)
                 return normalized.DisplayName;
+
+            // Windows MME cuts device names to 31 characters ("Microphone (Rocksmith USB Guita"),
+            // and the shared audio settings can hold that form.
+            if (normalizedSavedName.Length == MmeTruncatedDeviceNameLength)
+            {
+                ToneLabPortAudio.DeviceDescriptor truncated = Array.Find(devices, candidate =>
+                    NormalizePortAudioDeviceName(candidate.DisplayName).StartsWith(normalizedSavedName, StringComparison.OrdinalIgnoreCase));
+                if (truncated != null)
+                    return truncated.DisplayName;
+            }
         }
 
         return string.Empty;
     }
+
+    private const int MmeTruncatedDeviceNameLength = 31;
 
     private static ToneLabPortAudio.DeviceDescriptor ResolvePortAudioDevice(string savedName, ToneLabPortAudio.DeviceDescriptor[] devices)
     {

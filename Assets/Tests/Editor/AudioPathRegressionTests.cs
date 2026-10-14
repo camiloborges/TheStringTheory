@@ -480,6 +480,17 @@ public sealed class AudioPathRegressionTests
     }
 
     [Test]
+    public void PortAudioDeviceResolution_MatchesMmeTruncatedNames()
+    {
+        object rocksmith = Device(11, "11: Microphone (Rocksmith USB Guitar Adapter)", "Microphone (Rocksmith USB Guitar Adapter)", "Windows WASAPI", 1, 0, 48000);
+        object laptopMic = Device(9, "9: Microphone Array (Intel Smart Sound)", "Microphone Array (Intel Smart Sound)", "Windows WASAPI", 2, 0, 48000);
+        Array devices = DeviceArray(laptopMic, rocksmith);
+
+        Assert.AreSame(rocksmith, InvokeRuntimeStatic("ResolvePortAudioDevice", "2: Microphone (Rocksmith USB Guita", devices));
+        Assert.IsNull(InvokeRuntimeStatic("ResolvePortAudioDevice", "2: Microphone (Rocksmith", devices));
+    }
+
+    [Test]
     public void PortAudioDeviceResolution_CoversLegacyNamesDecoratedLabelsAndBackendFilters()
     {
         object asioInput = Device(7, "7: Focusrite USB ASIO", "Focusrite USB ASIO", "ASIO", 2, 0, 48000);
