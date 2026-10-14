@@ -1824,6 +1824,8 @@ public sealed class TabsSongHeaderOverlay
     private readonly Button gameplayShortcutLoopButton;
     private readonly Button gameplayShortcutLevelDownButton;
     private readonly Button gameplayShortcutLevelUpButton;
+    private readonly Button gameplayShortcutSpeedDownButton;
+    private readonly Button gameplayShortcutSpeedUpButton;
     private readonly Button gameplayShortcutOpenButton;
     private readonly Button gameplayShortcutSeekLeftButton;
     private readonly Button gameplayShortcutSeekRightButton;
@@ -2914,6 +2916,8 @@ public sealed class TabsSongHeaderOverlay
         gameplayShortcutLoopButton = CreateShortcutKeycapButton("Loop (L)", () => owner?.ToggleLoopFromUi());
         gameplayShortcutLevelDownButton = CreateShortcutKeycapButton("Level − (−)", () => owner?.StepArrangementDifficultyFromUi(-1));
         gameplayShortcutLevelUpButton = CreateShortcutKeycapButton("Level + (+)", () => owner?.StepArrangementDifficultyFromUi(1));
+        gameplayShortcutSpeedDownButton = CreateShortcutKeycapButton("Speed − ([)", () => owner?.StepPlaybackSpeedFromUi(-5));
+        gameplayShortcutSpeedUpButton = CreateShortcutKeycapButton("Speed + (])", () => owner?.StepPlaybackSpeedFromUi(5));
         gameplayShortcutOpenButton = CreateShortcutKeycapButton("Open (Enter)", () => owner?.ActivateSelectedPauseActionFromUi());
         gameplayShortcutSeekLeftButton = CreateShortcutKeycapButton("Seek - (←)", () => owner?.SeekGameplayByStepFromUi(-1));
         gameplayShortcutSeekRightButton = CreateShortcutKeycapButton("Seek + (→)", () => owner?.SeekGameplayByStepFromUi(1));
@@ -2929,6 +2933,8 @@ public sealed class TabsSongHeaderOverlay
         gameplayShortcutRow.Add(gameplayShortcutLoopButton);
         gameplayShortcutRow.Add(gameplayShortcutLevelDownButton);
         gameplayShortcutRow.Add(gameplayShortcutLevelUpButton);
+        gameplayShortcutRow.Add(gameplayShortcutSpeedDownButton);
+        gameplayShortcutRow.Add(gameplayShortcutSpeedUpButton);
         gameplayShortcutRow.Add(gameplayShortcutOpenButton);
         gameplayShortcutRow.Add(gameplayShortcutSeekLeftButton);
         gameplayShortcutRow.Add(gameplayShortcutSeekRightButton);
@@ -11479,6 +11485,11 @@ public sealed class TabsSongHeaderOverlay
                 gameplayShortcutLevelDownButton.style.display = levelStepDisplay;
             if (gameplayShortcutLevelUpButton != null)
                 gameplayShortcutLevelUpButton.style.display = levelStepDisplay;
+            DisplayStyle speedStepDisplay = snapshot.gameplayMode == GuitarGameplayMode.Guitar && !snapshot.multiplayerRhythmMode && !showPause ? DisplayStyle.Flex : DisplayStyle.None;
+            if (gameplayShortcutSpeedDownButton != null)
+                gameplayShortcutSpeedDownButton.style.display = speedStepDisplay;
+            if (gameplayShortcutSpeedUpButton != null)
+                gameplayShortcutSpeedUpButton.style.display = speedStepDisplay;
             DisplayStyle pauseOnlyDisplay = showPause ? DisplayStyle.Flex : DisplayStyle.None;
             if (gameplayShortcutOpenButton != null)
                 gameplayShortcutOpenButton.style.display = pauseOnlyDisplay;

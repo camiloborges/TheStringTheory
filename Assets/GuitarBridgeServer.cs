@@ -2659,6 +2659,15 @@ public class GuitarBridgeServer : MonoBehaviour
             return;
         }
 
+        int speedStep = Input.GetKeyDown(KeyCode.LeftBracket) ? -PlaybackSpeedStepPercent
+            : Input.GetKeyDown(KeyCode.RightBracket) ? PlaybackSpeedStepPercent
+            : 0;
+        if (speedStep != 0 && !isPaused && gameplayMode == GuitarGameplayMode.Guitar)
+        {
+            StepPlaybackSpeedFromUi(speedStep);
+            return;
+        }
+
         if (Input.GetKeyDown(BackgroundMoodSetterKey) && CanOpenBackgroundMoodSetter())
         {
             OpenBackgroundMoodSetterFromUi();
@@ -13431,6 +13440,19 @@ public class GuitarBridgeServer : MonoBehaviour
 
         RestartCurrentSongForModeChange();
         ResumePlaybackFromUi();
+    }
+
+    private const int PlaybackSpeedStepPercent = 5;
+
+    // [ / ] keys and the Speed -/+ keycaps: playback speed in 5% steps while playing
+    // (the same setting as the pause menu's speed control, applied every frame).
+    public void StepPlaybackSpeedFromUi(int deltaPercent)
+    {
+        if (isPaused || gameplayMode != GuitarGameplayMode.Guitar)
+            return;
+
+        SetPlaybackSpeedPercentFromUi(Mathf.Round((playbackSpeedPercent + deltaPercent) / PlaybackSpeedStepPercent) * PlaybackSpeedStepPercent);
+        ShowGameplayNotice($"Speed {playbackSpeedPercent:0}%");
     }
 
     // +/- keys and the Level -/+ keycaps; only while playing (the step resumes playback).
