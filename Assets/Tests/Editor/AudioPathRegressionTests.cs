@@ -437,6 +437,23 @@ public sealed class AudioPathRegressionTests
     }
 
     [Test]
+    public void GuitarInputFallback_PicksGuitarInputsAndIgnoresOrdinaryMics()
+    {
+        Assert.AreEqual(1, SharedAudioSettingsUtility.FindGuitarLikeInputIndex(new[]
+        {
+            "14: Microphone (Jabra SPEAK 410 USB)",
+            "11: Microphone (Rocksmith USB Guitar Adapter)"
+        }));
+        Assert.AreEqual(0, SharedAudioSettingsUtility.FindGuitarLikeInputIndex(new[] { "Analogue 1 + 2 (Focusrite USB Audio)" }));
+        Assert.AreEqual(-1, SharedAudioSettingsUtility.FindGuitarLikeInputIndex(new[]
+        {
+            "14: Microphone (Jabra SPEAK 410 USB)",
+            "15: Microphone Array (Intel® Smart Sound Technology for Digital Microphones)"
+        }));
+        Assert.AreEqual(-1, SharedAudioSettingsUtility.FindGuitarLikeInputIndex(null));
+    }
+
+    [Test]
     public void SharedAudioNativeDetectorResolution_PrefersStableHostForSamePhysicalInput()
     {
         GameObject gameObject = new GameObject("AudioPathRegressionTests_Bridge");
