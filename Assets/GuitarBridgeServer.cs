@@ -2653,9 +2653,9 @@ public class GuitarBridgeServer : MonoBehaviour
         int difficultyStep = Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus) ? 1
             : Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus) ? -1
             : 0;
-        if (!isPaused && difficultyStep != 0 && IsCurrentArrangementDifficultyModeAvailable())
+        if (difficultyStep != 0 && !isPaused && IsCurrentArrangementDifficultyModeAvailable())
         {
-            StepArrangementDifficultyInPlace(difficultyStep);
+            StepArrangementDifficultyFromUi(difficultyStep);
             return;
         }
 
@@ -13431,6 +13431,13 @@ public class GuitarBridgeServer : MonoBehaviour
 
         RestartCurrentSongForModeChange();
         ResumePlaybackFromUi();
+    }
+
+    // +/- keys and the Level -/+ keycaps; only while playing (the step resumes playback).
+    public void StepArrangementDifficultyFromUi(int delta)
+    {
+        if (!isPaused && IsCurrentArrangementDifficultyModeAvailable())
+            StepArrangementDifficultyInPlace(delta);
     }
 
     // +/- during play: one difficulty level up or down, continuing from the current position
